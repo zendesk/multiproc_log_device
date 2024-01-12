@@ -140,13 +140,7 @@ module MultiprocLogDevice
         # option, and we want to detach the forked subcommand from the terminal.
         pid = fork do
           Process.setsid if Process.respond_to?(:setsid)
-          Process.exec(
-            {
-              'MULTIPROC_LOG_DEVICE_STREAM' => stream_socket.connect_address.unix_path,
-              'MULTIPROC_LOG_DEVICE_DGRAM' => dgram_socket.connect_address.unix_path,
-            },
-            *@config.subcommand,
-            unsetenv_others: false,
+          redirect_opts = {
             out: StreamDevice.new(
               path: stream_socket.connect_address.unix_path,
               attributes: {
@@ -154,14 +148,25 @@ module MultiprocLogDevice
                 stream_type: :stdout,
               }
             ),
-            err: StreamDevice.new(
+          }
+          if @config.capture_stderr
+            redirect_opts[:err] = StreamDevice.new(
               path: stream_socket.connect_address.unix_path,
               attributes: {
                 pid: Process.pid,
                 stream_type: :stderr,
               }
-            ),
-            close_others: true
+            )
+          end
+          Process.exec(
+            {
+              'MULTIPROC_LOG_DEVICE_STREAM' => stream_socket.connect_address.unix_path,
+              'MULTIPROC_LOG_DEVICE_DGRAM' => dgram_socket.connect_address.unix_path,
+            },
+            *@config.subcommand,
+            unsetenv_others: false,
+            close_others: true,
+            **redirect_opts
           )
         end
         sigdelegate_task = task.async do |subtask|

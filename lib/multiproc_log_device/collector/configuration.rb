@@ -26,6 +26,7 @@ module MultiprocLogDevice
         @out_stream = $stdout
         @shutdown_timeout = 10
         @max_line_length = 0
+        @capture_stderr = true
       end
 
       # Sets the framing class to use. The framing implementation defines how the
@@ -92,6 +93,10 @@ module MultiprocLogDevice
       #
       # @return [Integer] The max line length, in bytes
       attr_accessor :max_line_length
+
+      # @return [Boolean] If set, only the subprocess's stdout will be captured when
+      #   spawned, not its stderr. Defaults to on
+      attr_accessor :capture_stderr
     end
   end
 end
