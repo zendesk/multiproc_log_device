@@ -1,0 +1,46 @@
+require:
+  - rubocop-minitest
+  - rubocop-rake
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: '3.2'
+
+Style/Documentation:
+  Enabled: false
+
+Style/RedundantStringEscape:
+  Enabled: false
+
+Metrics:
+  Enabled: false
+
+Lint/SuppressedException:
+  Enabled: false
+
+Style/StderrPuts:
+  Enabled: false
+
+Style/RescueModifier:
+  Enabled: false
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma 
+
+Style/RedundantInitialize:
+  Enabled: false
+
+Minitest/EmptyLineBeforeAssertionMethods:
+  Enabled: false
+
+Style/Lambda:
+  Enabled: false
+
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/CaseIndentation:
+  EnforcedStyle: end
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable

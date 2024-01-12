@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'multiproc_log_device'
+ret = MultiprocLogDevice::Collector::Command[*ARGV]
+exit ret if ret != 0
