@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gem 'async', '~> 2'
+gem 'benchmark-ips', '~> 2'
+gem 'faraday', '~> 2'
+gem 'multiproc_log_device', path: '../../'
+gem 'rack', '~> 3'
+gem 'unicorn', '~> 6'

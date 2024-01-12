@@ -1,0 +1,78 @@
+PATH
+  remote: ../..
+  specs:
+    multiproc_log_device (0.1.0)
+      activesupport (>= 6.1)
+      async (~> 2)
+      measured (~> 2)
+      msgpack (~> 1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activesupport (7.1.2)
+      base64
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      connection_pool (>= 2.2.5)
+      drb
+      i18n (>= 1.6, < 2)
+      minitest (>= 5.1)
+      mutex_m
+      tzinfo (~> 2.0)
+    async (2.8.0)
+      console (~> 1.10)
+      fiber-annotation
+      io-event (~> 1.1)
+      timers (~> 4.1)
+    base64 (0.2.0)
+    benchmark-ips (2.13.0)
+    bigdecimal (3.1.5)
+    concurrent-ruby (1.2.2)
+    connection_pool (2.4.1)
+    console (1.23.3)
+      fiber-annotation
+      fiber-local
+    drb (2.2.0)
+      ruby2_keywords
+    faraday (2.9.0)
+      faraday-net_http (>= 2.0, < 3.2)
+    faraday-net_http (3.1.0)
+      net-http
+    fiber-annotation (0.2.0)
+    fiber-local (1.0.0)
+    i18n (1.14.1)
+      concurrent-ruby (~> 1.0)
+    io-event (1.4.1)
+    kgio (2.11.4)
+    measured (2.8.2)
+      activesupport (>= 5.2)
+    minitest (5.21.1)
+    msgpack (1.7.2)
+    mutex_m (0.2.0)
+    net-http (0.4.1)
+      uri
+    rack (3.0.8)
+    raindrops (0.20.1)
+    ruby2_keywords (0.0.5)
+    timers (4.3.5)
+    tzinfo (2.0.6)
+      concurrent-ruby (~> 1.0)
+    unicorn (6.1.0)
+      kgio (~> 2.6)
+      raindrops (~> 0.7)
+    uri (0.13.0)
+
+PLATFORMS
+  arm64-darwin-22
+
+DEPENDENCIES
+  async (~> 2)
+  benchmark-ips (~> 2)
+  faraday (~> 2)
+  multiproc_log_device!
+  rack (~> 3)
+  unicorn (~> 6)
+
+BUNDLED WITH
+   2.4.19

@@ -213,6 +213,39 @@ Usage: multiproc_log_device [options] -- SUBCOMMAND
     -h, --help                       Print this help message
 ```
 
+## How fast is this?
+
+Probably not all that fast. There's a benchmark in `test/benchmark` you can play around with. On my machine:
+
+```
+% cd test/benchmark;
+% UNICORN_WORKERS=2 ruby benchmark.rb
+Running benchmark with 2 unicorn workers.
+ruby 3.2.2 (2023-03-30 revision e51014f9c0) [arm64-darwin22]
+Warming up --------------------------------------
+Logging direct to /dev/null
+                         9.000 i/100ms
+    Logging to socat     4.000 i/100ms
+Logging to multiproc_log_device
+                         3.000 i/100ms
+Calculating -------------------------------------
+Logging direct to /dev/null
+                         88.198 (± 6.8%) i/s -      2.637k in  30.044523s
+    Logging to socat     37.349 (± 5.4%) i/s -      1.120k in  30.096228s
+Logging to multiproc_log_device
+                         30.016 (± 6.7%) i/s -    900.000 in  30.062289s
+```
+
+This benchmark spawns a Unicorn HTTP server, and has the benchmark make requests to it. The request handlers perform lots of logging to one of three places:
+
+* Having Unicorn write log messages straight to `/dev/null` itself
+* Having Unicorn write log messages to a `socat(1)` process, which is then logging the logs to `/dev/null`
+* Having Unicorn write log messages to multiproc_log_device with the `none` frmaing, which then forwards the logs to `/dev/null`
+
+The results are saying that just the overhead of switching from the Unicorn process to a different process to handle the logging _at all_ is fairly significant, and this Ruby implementation of the log receiver is only a little bit slower than the efficient `socat(1)` implementation.
+
+So the answer is... fast enough? If you find this gem is causing a specific performance problem with your app, please open an issue with details - I'd love to hear about it.
+
 ## Copyright and license
 
 Copyright 2024 Zendesk, Inc.

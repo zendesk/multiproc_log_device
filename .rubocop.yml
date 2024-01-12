@@ -44,3 +44,6 @@ Layout/CaseIndentation:
 
 Layout/EndAlignment:
   EnforcedStyleAlignWith: variable
+
+Style/GlobalVars:
+  Enabled: false
