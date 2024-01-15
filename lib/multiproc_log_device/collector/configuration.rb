@@ -84,6 +84,7 @@ module MultiprocLogDevice
       # How large (in bytes) the maximum line length which will be allowed to be buffered
       # in memory inside the collector process. If a process writes a line to a
       # `{MultiprocLogDevice::StreamDevice}` which is larger than this, the line will be
+      # cut into multiple pieces.
       #
       # Also note that this parameter _only_ affects {MultiprocLogDevice::StreamDevice}
       # instances, and _NOT_ {MultiprocLogDevice::StructuredDevice} instances.
