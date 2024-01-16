@@ -13,16 +13,21 @@ module MultiprocLogDevice
     # @param path [String] The path to the unix socket to connect to; defaults to the
     #   environment variable `MULTIPROC_LOG_DEVICE_STREAM`, which is set when a process
     #   is running as a subprocess under the `multiproc_log_device` collector program.
+    # @param stream_type [Symbol] What to set as the stream's built-in `stream_type`
+    #   attribute. This is normally either `:stdout` or `:stderr`
     # @param attributes [Hash] The attributes which will become associated with every
     #   log line written into the socket.
     #
     # @note Once this method returns, the constructed `{StreamDevice}` responds to all
     #   `IO` methods, and any lines written into it will be received by the collector
     #   process.
-    def initialize(path: ENV.fetch('MULTIPROC_LOG_DEVICE_STREAM'), attributes: {})
+    def initialize(path: ENV.fetch('MULTIPROC_LOG_DEVICE_STREAM'), stream_type: :unknown, attributes: {})
       @socket = Socket.unix(path)
 
-      init_msg = Protocol::StreamHello.new(attributes:)
+      init_msg = Protocol::StreamHello.new(
+        attributes:, stream_type:,
+        pid: Process.pid
+      )
       @socket.write(Protocol::MsgpackFactory.dump(init_msg))
 
       super(@socket)

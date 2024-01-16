@@ -143,19 +143,13 @@ module MultiprocLogDevice
           redirect_opts = {
             out: StreamDevice.new(
               path: stream_socket.connect_address.unix_path,
-              attributes: {
-                pid: Process.pid,
-                stream_type: :stdout,
-              }
+              stream_type: :stdout
             ),
           }
           if @config.capture_stderr
             redirect_opts[:err] = StreamDevice.new(
               path: stream_socket.connect_address.unix_path,
-              attributes: {
-                pid: Process.pid,
-                stream_type: :stderr,
-              }
+              stream_type: :stderr
             )
           end
           Process.exec(
@@ -223,8 +217,16 @@ module MultiprocLogDevice
         each_line_args = []
         each_line_args << @config.max_line_length if @config.max_line_length.positive?
         socket.each_line(*each_line_args) do |line|
+          # Synthesise a structured log message from this line.
+          slmessage = Protocol::StructuredLogMessage.new(
+            message_text: line,
+            attributes: init_msg.attributes,
+            stream_type: init_msg.stream_type,
+            pid: init_msg.pid,
+            tid: nil
+          )
           @output_lock.synchronize do
-            @framing.on_message(line, init_msg.attributes)
+            @framing.on_message(slmessage)
           end
         end
       ensure
@@ -245,7 +247,7 @@ module MultiprocLogDevice
         parsed_message = @msgpack.load(recvd_ios.first.read) if parsed_message.is_a?(Protocol::DgramAttachedFileProxy)
 
         @output_lock.synchronize do
-          @framing.on_message(parsed_message.message, parsed_message.attributes)
+          @framing.on_message(parsed_message)
         end
       ensure
         recvd_ios.each(&:close)

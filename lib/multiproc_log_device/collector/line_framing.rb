@@ -11,8 +11,9 @@ module MultiprocLogDevice
     # Example:
     #
     # ```
-    # line_framing.on_message("no newline", {attr: 'ignored'})
-    # line_framing.on_message("yes newline\n", {attr: 'ignored'})
+    # SLMsg = MultiprocLogDevice::Protocol::StructuredLogMessage
+    # line_framing.on_message(SLMsg.new(message_text: "no newline"))
+    # line_framing.on_message(SLMsg.new(message_text: "yes newline\n"))
     # # => outputs to @stream:
     # # no newline
     # # yes newline
@@ -31,12 +32,12 @@ module MultiprocLogDevice
 
       # Called by the collector process to write a message to the `stream`.
       #
-      # @param message [String] The message text to write
-      # @param _attributes [Hash] Additional attributes to write with the message. Note
-      #   that this framing actually totally ignores these attributes.
-      def on_message(message, _attributes)
-        @stream.write message
-        @stream.write "\n" unless message.ends_with?("\n")
+      # @param slmessage [MultiprocLogDevice::Protocol::StructuredLogMessage]
+      #   The message text and attributes to write. Note that this framing actually
+      #   ignores the attributes.
+      def on_message(slmessage)
+        @stream.write slmessage.message_text
+        @stream.write "\n" unless slmessage.message_text.ends_with?("\n")
       end
     end
   end

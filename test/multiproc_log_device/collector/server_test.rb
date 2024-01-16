@@ -288,7 +288,7 @@ module MultiprocLogDevice
           $stdout.puts "from_stdout_2"
         RUBY
         @config.subcommand = [RbConfig.ruby, program]
-        @config.framing_class = mock_framing { |message, _attributes| "[FRAMED] #{message}" }
+        @config.framing_class = mock_framing { |slmsg| "[FRAMED] #{slmsg.message_text}" }
 
         Server.new(@config).run
 
@@ -306,8 +306,8 @@ module MultiprocLogDevice
           $stderr.puts "from_stderr_2"
         RUBY
         @config.subcommand = [RbConfig.ruby, program]
-        @config.framing_class = mock_framing do |message, attributes|
-          "[#{attributes[:stream_type].inspect}] #{message.chomp} (pid #{attributes[:pid]})\n"
+        @config.framing_class = mock_framing do |slmsg|
+          "[#{slmsg.stream_type.inspect}] #{slmsg.message_text.chomp} (pid #{slmsg.pid})\n"
         end
 
         Server.new(@config).run
@@ -323,17 +323,16 @@ module MultiprocLogDevice
           require 'multiproc_log_device'
           new_conn = MultiprocLogDevice::StreamDevice.new(attributes: {
             custom: 'foo',
-            stream_type: :special,
             bool: true,
-          })
+          }, stream_type: :special)
           $stdout.puts "from_stdout"
           new_conn.puts "from_special"
         RUBY
         @config.subcommand = [RbConfig.ruby, program]
-        @config.framing_class = mock_framing do |message, attributes|
-          "message: #{message.chomp}, " \
-            "type: #{attributes[:stream_type].inspect}, " \
-            "custom: #{attributes.fetch(:custom, 'nil')}\n"
+        @config.framing_class = mock_framing do |slmsg|
+          "message: #{slmsg.message_text.chomp}, " \
+            "type: #{slmsg.stream_type.inspect}, " \
+            "custom: #{slmsg.attributes.fetch(:custom, 'nil')}\n"
         end
 
         status = Server.new(@config).run
@@ -350,7 +349,7 @@ module MultiprocLogDevice
           puts 'a_very_long_line'
           puts 'also_short'
         RUBY
-        @config.framing_class = mock_framing { |message, _attrs| "[FRAME]#{message.chomp}\n" }
+        @config.framing_class = mock_framing { |slmsg| "[FRAME]#{slmsg.message_text.chomp}\n" }
         @config.subcommand = [RbConfig.ruby, program]
         @config.max_line_length = 10
 
@@ -374,7 +373,9 @@ module MultiprocLogDevice
           structured.write 'with_attrs_1', attributes: { foo: 'bar' }
           structured.write 'with_attrs_2', attributes: { foo: 'baz' }
         RUBY
-        @config.framing_class = mock_framing { |message, attrs| "[foo: #{attrs.fetch(:foo, 'nil')}] #{message}\n" }
+        @config.framing_class = mock_framing do |slmsg|
+          "[foo: #{slmsg.attributes.fetch(:foo, 'nil')}] #{slmsg.message_text}\n"
+        end
         @config.subcommand = [RbConfig.ruby, program]
 
         Server.new(@config).run
@@ -404,7 +405,9 @@ module MultiprocLogDevice
           r.close
           sleep
         RUBY
-        @config.framing_class = mock_framing { |message, attrs| "[foo: #{attrs.fetch(:foo, 'nil')}] #{message}\n" }
+        @config.framing_class = mock_framing do |slmsg|
+          "[foo: #{slmsg.attributes.fetch(:foo, 'nil')}] #{slmsg.message_text}\n"
+        end
         @config.subcommand = [RbConfig.ruby, program]
 
         Sync do |root_task|
@@ -449,7 +452,7 @@ module MultiprocLogDevice
             end
           end
         RUBY
-        @config.framing_class = mock_framing { |message, attrs| "[i: #{attrs[:i]}] #{message.chomp}\n" }
+        @config.framing_class = mock_framing { |slmsg| "[i: #{slmsg.attributes[:i]}] #{slmsg.message_text.chomp}\n" }
         @config.subcommand = [RbConfig.ruby, program]
 
         Server.new(@config).run

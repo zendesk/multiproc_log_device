@@ -5,13 +5,19 @@ module MultiprocLogDevice
     # This framing type turns received messages into a stream of newline-separated
     # compact (single-line) line JSON objects. The written objects contain all attributes
     # of the message, and the message itself is written under the `"message"` key.
+    # The built-in attributes owned by the gem itself are emitted under a `"_mpld"` key.
     #
     # Example:
     #
     # ```
-    # json_framing.on_message("foo\n", {foo: 'bar'})
+    # SLMsg = MultiprocLogDevice::Protocol::StructuredLogMessage
+    # json_framing.on_message(SLMsg.new(
+    #   message_text: "foo\n",
+    #   attributes: {foo: 'bar'},
+    #   pid: 123, tid: 124, stream_type: :structured
+    # ))
     # # => writes to @stream:
-    # # {"foo":"bar","message":"foo\n"}
+    # # {"foo":"bar","message":"foo\n","_mpld":{"stream_type":"structured","pid": 123,"tid": "124"}}
     # ```
     #
     # Normally this framing is selected by passing `--framing json` to the CLI.
@@ -27,10 +33,19 @@ module MultiprocLogDevice
 
       # Called by the collector process to write a message to the `stream`.
       #
-      # @param message [String] The message text to write
-      # @param attributes [Hash] Additional attributes to write with the message.
-      def on_message(message, attributes)
-        @stream.puts attributes.merge({ message: }).to_json
+      # @param slmessage [MultiprocLogDevice::Protocol::StructuredLogMessage]
+      #   The message text and attributes to write
+      def on_message(slmessage)
+        obj = {
+          _mpld: {
+            stream_type: slmessage.stream_type,
+            pid: slmessage.pid,
+            tid: slmessage.tid,
+          }.compact_blank,
+          **(slmessage.attributes || {}),
+          message: slmessage.message_text,
+        }.compact_blank
+        @stream.puts obj.to_json
       end
     end
   end

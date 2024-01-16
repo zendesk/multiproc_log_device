@@ -3,7 +3,7 @@
 module MultiprocLogDevice
   module Collector
     # This framing writes messages as-is to the provided stream. It literally simply
-    # calls `@stream.write(message)` in it's {#on_message} implementation.
+    # calls `@stream.write(message_text)` in it's {#on_message} implementation.
     #
     # Normally this framing is selected by passing `--framing none` to the CLI.
     class NoneFraming
@@ -18,11 +18,11 @@ module MultiprocLogDevice
 
       # Called by the collector process to write a message to the `stream`.
       #
-      # @param message [String] The message text to write
-      # @param _attributes [Hash] Additional attributes to write with the message. Note
-      #   that this framing actually totally ignores these attributes.
-      def on_message(message, _attributes)
-        @stream.write message
+      # @param slmessage [MultiprocLogDevice::Protocol::StructuredLogMessage]
+      #   The message text and attributes to write. Note that this framing actually
+      #   ignores the attributes.
+      def on_message(slmessage)
+        @stream.write slmessage.message_text
       end
     end
   end

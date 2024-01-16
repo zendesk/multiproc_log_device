@@ -104,8 +104,8 @@ module MultiprocLogDevice
             # parent
             data = JSON.parse(pipe.read)
             assert_equal "hello\n", data['message']
-            assert_equal 'stdout', data['stream_type']
-            assert data.key?('pid')
+            assert_equal 'stdout', data['_mpld']['stream_type']
+            assert data['_mpld'].key?('pid')
           else
             # child
             exit Command['--framing', 'json', '--', RbConfig.ruby, '-e', 'puts "hello"']

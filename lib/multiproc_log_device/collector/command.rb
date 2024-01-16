@@ -44,8 +44,8 @@ module MultiprocLogDevice
                   json - Wrap each line of output in a JSON object with its attributes.
                   logfmt - Wrap each line of output in a logfmt formatting.
                   Custom::Class - The name of a class which will be used to perform the framing; \
-            it must respond to #on_message(message, attributes) and be loaded with a --require \
-            option.
+            it must respond to #on_message(MultiprocLogDevice::Protocol::StructuredLogMessage) \
+            and be loaded with a --require option.
           DESC
             config.framing_class = val
           end

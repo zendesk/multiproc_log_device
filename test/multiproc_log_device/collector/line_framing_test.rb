@@ -11,17 +11,22 @@ module MultiprocLogDevice
       end
 
       it 'appends newlines for messages without them' do
-        @framing.on_message('foo bar', {})
+        msg = Protocol::StructuredLogMessage.new(message_text: 'foo bar')
+        @framing.on_message(msg)
         assert_equal "foo bar\n", @stream.string
       end
 
       it 'does not append newlines for messages that have them' do
-        @framing.on_message("foo bar\n", {})
+        msg = Protocol::StructuredLogMessage.new(message_text: "foo bar\n")
+        @framing.on_message(msg)
         assert_equal "foo bar\n", @stream.string
       end
 
       it 'ignores attributes' do
-        @framing.on_message("foo bar\n", { attr: 'val' })
+        msg = Protocol::StructuredLogMessage.new(
+          message_text: "foo bar\n", attributes: { attr: 'val' }
+        )
+        @framing.on_message(msg)
         assert_equal "foo bar\n", @stream.string
       end
     end

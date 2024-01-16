@@ -179,9 +179,9 @@ The gem comes with a few built-in framing options.
 If none of these meet your needs, you can also implement a custom framing implementation. To do so, first, use the `--require` option to make sure your custom class is loaded; then, specify the name of the class with the `--framing` option (e.g. `--require ./lib/my/custom_framing --framing My::CustomFraming`). Your custom framing class must adhere to the following protocolÚ
 
 * `#initialize(stream, config)`: Your framing class will be constructed with two arguments; `stream` is an `IO` object which represents where the log output is supposed to go (this will normally be the collectors `$stdout` object), and `config` is the collector process's `MultiprocLogDevice::Collector::Configuration` instance.
-* `#on_message(message, attributes)`: This will be called for each message received either from the stream or datagram sockets. The `message` is the text of the log message, and the `  attributes` is a hash containing the message attributes (e.g. either the ones set on the entire stream, like `pid` or `stream_type` in the above examples, or custom per-message attributes sent with `StructuredDevice`). Your implementation should write a stringified version of the message & attributes to the `stream` IO object it was constructed with.
+* `#on_message(slmessage)`: This will be called for each message received either from the stream or datagram sockets. The `slmessage` argument is an instance of `MultiprocLogDevice::Protocol::StructuredLogMessage`, and contains the text of the log message (`#message_text`), user-provided attributes (`#attributes`), as well as built-in attributes owned by this gem (e.g. `#pid` and `#tid`). Your implementation should write a stringified version of the message & attributes to the `stream` IO object it was constructed with.
   * The attributes hash is always present; if there are no attributes, it will be an empty hash.
-  * The distinction between string vs symbol keys is preserved when the attributes are sent from the child process to the parent. For example, the initial child process will have `attributes[:pid]` set on its log messages, NOT `attributes['pid']`.
+  * The distinction between string vs symbol keys is preserved when the attributes are sent from the child process to the parent.
 * In the current implementation of this gem, only a single instance of your framing class will be constructed. This is an implementation detail which is subject to change, however.
 * It is guaranteed that `#on_message` will not be called concurrently on different threads or fibers for the same instance of your framing class.
 
@@ -207,7 +207,7 @@ Usage: multiproc_log_device [options] -- SUBCOMMAND
       line - Like none, but ensures that every message always ends with a newline.
       json - Wrap each line of output in a JSON object with its attributes.
       logfmt - Wrap each line of output in a logfmt formatting.
-      Custom::Class - The name of a class which will be used to perform the framing; it must respond to #on_message(message, attributes) and be loaded with a --require option.
+      Custom::Class - The name of a class which will be used to perform the framing; it must respond to #on_message(MultiprocLogDevice::Protocol::StructuredLogMessage) and be loaded with a --require option.
         --kill-pgroup                When we receive signals, broadcast them to the child's entire process group, not just the child process itself
     -l, --max-line-length=LENGTH     Max line length to buffer in memory from a child process's output. Specify in bytes (also accepts 'k', 'M', and 'G' suffixes).
     -h, --help                       Print this help message

@@ -46,8 +46,8 @@ module MockFramingSupport
         @stream = stream
       end
 
-      def on_message(message, attributes)
-        @stream.write self.class._block.call(message, attributes)
+      def on_message(slmessage)
+        @stream.write self.class._block.call(slmessage)
       end
     end
   end

@@ -39,13 +39,17 @@ module MultiprocLogDevice
     # actually fit in a unix datagram, we send it through a tempfile file descriptor
     # attached to the message.
     #
-    # @param message [String] The text of the message to write
+    # @param message_text [String] The text of the message to write
     # @param attributes [Hash] Any custom attributes to send along with the message;
     #   These will be seen by the framing instance on the collector side and included
     #   in the e.g. JSON or logfmt output.
-    def write(message, attributes: {})
+    def write(message_text, attributes: {})
       # Writes data without any attributes
-      dgram_message = Protocol::DgramMessage.new(attributes:, message:)
+      dgram_message = Protocol::StructuredLogMessage.new(
+        message_text:, attributes:,
+        pid: Process.pid, tid: Thread.current.native_thread_id,
+        stream_type: :structured
+      )
       dgram_message_bytes = @msgpack.dump(dgram_message)
       if dgram_message_bytes.size > MAX_DATAGRAM_SIZE
         send_through_descriptor dgram_message_bytes
