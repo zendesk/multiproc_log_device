@@ -4,18 +4,41 @@ Safely log from multiple processes to a shared output stream. Designed to suppor
 
 ## Quickstart
 
-* Add `multiproc_log_device` to your application's Gemfile, and `bundle install`
-* Add the binstub for the `multiproc_log_device` collector - `bundle binstubs multiproc_log_device`. This will create a `bin/multiproc_log_device` file in your application, which you should check into source control.
-* Instead of directly starting your application, invoke it through `bin/multiproc_log_device` instead. For example, if you normally start your app through `bin/unicorn -c config/unicorn.rb`, you would instead run `bin/multiiproc_log_device [options] -- bin/unicorn -c config/unicorn.rb`
+* Add `multiproc_log_device` to your application's `Gemfile`, and then run
+
+    ```ruby
+    bundle install
+    ```
+
+* Add the binstub for the `multiproc_log_device` collector:
+
+    ```ruby
+    bundle binstubs multiproc_log_device
+    ```
+
+  This will create a `bin/multiproc_log_device` file in your application, which you should check into source control.
+
+* Instead of directly starting your application, invoke it through `bin/multiproc_log_device` instead. For example, if you normally start your app through
+
+    ```ruby
+    bin/unicorn -c config/unicorn.rb
+    ```
+
+  You would instead run
+
+    ```ruby
+    bin/multiproc_log_device [options] -- bin/unicorn -c config/unicorn.rb
+    ```
+
 * When your application forks, reopen `$stdout` and `$stderr` to point to new streams. For example, with Unicorn, add something like the following to your Unicorn configuration:
 
-```ruby
-require 'multiproc_log_device'
-after_fork do
-  $stdout.reopen MultiprocLogDevice::StreamDevice.new(attributes: {pid: Process.pid, stream_type: 'stdout'})
-  $stderr.reopen MultiprocLogDevice::StreamDevice.new(attributes: {pid: Process.pid, stream_type: 'stdout'})
-end
-```
+    ```ruby
+    require 'multiproc_log_device'
+    after_fork do
+      $stdout.reopen MultiprocLogDevice::StreamDevice.new(attributes: {pid: Process.pid, stream_type: 'stdout'})
+      $stderr.reopen MultiprocLogDevice::StreamDevice.new(attributes: {pid: Process.pid, stream_type: 'stdout'})
+    end
+    ```
 
 ## What is this gem for?
 
@@ -56,7 +79,7 @@ $stdout.puts "from parent process"
 Process.waitpid2 pid
 ```
 
-This might result in either the output `"from child process\nfrom parent process"``, or the output `"from parent process\nfrom child process"`. However, it won't ever print `"from chfrom parild procentprocesses\ns\n"`; both strings are < 4k, so they are guaranteed to be written into the pipe atomically.
+This might result in either the output `"from child process\nfrom parent process"`, or the output `"from parent process\nfrom child process"`. However, it won't ever print `"from chfrom parild procentprocesses\ns\n"`; both strings are < 4k, so they are guaranteed to be written into the pipe atomically.
 
 It's fairly easy, however, to construct a log line that's > 4k, especially if you're formatting your logs as JSON. Imagine a long backtrace, a lot of attributes, or a piece of user-provided text. Thus, if you have multiple processes writing JSON logs into a single stdout pipe, you run a real risk of multiple JSON objects being _interleaved_ with each other in the output; the result will be totally unparsable by your logging agent, and the log will be dropped on the floor. This is the first problem which this gem sets out to solve.
 
